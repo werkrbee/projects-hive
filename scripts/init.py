@@ -40,8 +40,10 @@ def main():
                     help="Scaffold under scaffolds/ (default: werkrbee-initiative)")
     ap.add_argument("--name", required=True, help="Project name")
     ap.add_argument("--description", default="", help="Override the project description")
-    ap.add_argument("--dir", default="", help="Where to create the project (default: ./<slug>)")
+    ap.add_argument("--dir", default="", help="Where to create the project (default: ~/Projects/<slug>)")
     ap.add_argument("--hives-dir", default="", help="Where the *-hive repos live (default: ./hives or siblings)")
+    ap.add_argument("--force", action="store_true",
+                    help="Override the guardrail that blocks scaffolding inside a hive repo")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -53,9 +55,22 @@ def main():
     sc = json.loads(manifest.read_text())
 
     slug = slugify(args.name)
-    target = Path(args.dir).expanduser().resolve() if args.dir else (Path.cwd() / slug)
+    # Default outside the repos, in ~/Projects — never the current directory,
+    # which is often *inside* a hive when you're running this script.
+    target = (Path(args.dir).expanduser() if args.dir else (Path.home() / "Projects" / slug)).resolve()
     desc = args.description or sc.get("description", "")
     subs = {"{{PROJECT_NAME}}": args.name, "{{PROJECT_SLUG}}": slug, "{{DESCRIPTION}}": desc}
+
+    # Guardrail: refuse to scaffold inside a hive repo or the hives/ tree — an
+    # initiative dropped in there pollutes the submodule (that's the ai-hive/ai-hive
+    # nesting trap). Ancestors named "*-hive" or "hives" are off-limits.
+    if not args.force:
+        for p in [target, *target.parents]:
+            if p.name == "hives" or p.name.endswith("-hive"):
+                print(f"refusing to scaffold inside a hive repo: {p}", file=sys.stderr)
+                print("Initiatives should live outside the *-hive repos. Use "
+                      "--dir ~/Projects/<name> (or --force to override).", file=sys.stderr)
+                sys.exit(1)
 
     print(f"Scaffolding '{args.name}' from '{sc['name']}' -> {target}\n")
     if target.exists() and any(target.iterdir()):

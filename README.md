@@ -58,12 +58,17 @@ cd projects-hive
 # Preview
 python3 scripts/init.py --name "Payments Revamp" --dry-run
 
-# Create the initiative (default: ./payments-revamp)
+# Create the initiative (default: ~/Projects/payments-revamp)
 python3 scripts/init.py --name "Payments Revamp"
 
 # Somewhere specific, from a chosen scaffold
 python3 scripts/init.py werkrbee-initiative --name "Q3 Migration" --dir ~/Projects/q3
 ```
+
+**Guardrail.** Initiatives default to `~/Projects/<slug>` — never the current
+directory — and `init.py` refuses to scaffold into a path inside any `*-hive`
+repo or a `hives/` tree (which would pollute a submodule). Pass `--force` only if
+you really mean to.
 
 `init.py`:
 
