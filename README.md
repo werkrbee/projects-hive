@@ -1,3 +1,9 @@
+> **Moved.** This hive now lives in
+> [werkrbee/ai-hive](https://github.com/werkrbee/ai-hive/tree/main/hives/projects-hive)
+> under `hives/projects-hive`, where all development happens.
+> This repository is archived read-only and keeps the
+> history up to the move.
+
 <p align="center">
   <img src="assets/projects-hive-logo.svg" alt="projects-hive — scaffold an initiative with the hives assembled" width="620">
 </p>
